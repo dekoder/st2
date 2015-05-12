@@ -15,8 +15,8 @@
 
 from st2api.controllers import resource
 from st2common import log as logging
-from st2common.models.api.policy import PolicyTypeAPI
-from st2common.persistence.policy import PolicyType
+from st2common.models.api.policy import PolicyTypeAPI, PolicyAPI
+from st2common.persistence.policy import PolicyType, Policy
 
 
 LOG = logging.getLogger(__name__)
@@ -26,3 +26,11 @@ class PolicyTypeController(resource.ResourceController):
     model = PolicyTypeAPI
     access = PolicyType
     supported_filters = {}
+
+
+class PolicyController(resource.ContentPackResourceController):
+    model = PolicyAPI
+    access = Policy
+    supported_filters = {
+        'pack': 'pack'
+    }

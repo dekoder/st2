@@ -15,8 +15,8 @@
 
 import six
 
-from st2common.models.api.policy import PolicyTypeAPI
-from st2common.persistence.policy import PolicyType
+from st2common.models.api.policy import PolicyTypeAPI, PolicyAPI
+from st2common.persistence.policy import PolicyType, Policy
 from st2tests.fixturesloader import FixturesLoader
 from tests import FunctionalTest
 
@@ -25,6 +25,10 @@ TEST_FIXTURES = {
     'policytypes': [
         'policy_type_1.yaml',
         'policy_type_2.yaml'
+    ],
+    'policies': [
+        'policy_1.yaml',
+        'policy_2.yaml'
     ]
 }
 
@@ -62,7 +66,7 @@ class PolicyTypeControllerTest(FunctionalTest):
         self.assertEqual(len(resp.json), 1, '%s did not return exactly one instance.' % url)
         retrieved = resp.json[0]
         self.assertEqual(retrieved['id'], selected['id'],
-                         '%s returned incorrect policy_type.' % url)
+                         '%s returned incorrect instance.' % url)
 
     def test_filter_empty(self):
         url = '/v1/policytypes?name=whatever'
@@ -82,9 +86,79 @@ class PolicyTypeControllerTest(FunctionalTest):
         self.assertEqual(resp.status_int, 200)
         retrieved = resp.json
         self.assertEqual(retrieved['id'], selected['id'],
-                         '%s returned incorrect policy_type.' % url)
+                         '%s returned incorrect instance.' % url)
 
     def test_get_one_fail(self):
         url = '/v1/policytypes/1'
+        resp = self.app.get(url, expect_errors=True)
+        self.assertEqual(resp.status_int, 404)
+
+
+class PolicyControllerTest(FunctionalTest):
+
+    @classmethod
+    def setUpClass(cls):
+        super(PolicyControllerTest, cls).setUpClass()
+
+        for _, fixture in six.iteritems(FIXTURES['policies']):
+            instance = PolicyAPI(**fixture)
+            Policy.add_or_update(PolicyAPI.to_model(instance))
+
+    def test_get_all(self):
+        url = '/v1/policies'
+        resp = self.app.get(url)
+        self.assertEqual(resp.status_int, 200)
+        self.assertGreater(len(resp.json), 0, '%s is empty.' % url)
+
+    def test_filter(self):
+        url = '/v1/policies'
+        resp = self.app.get(url)
+        self.assertEqual(resp.status_int, 200)
+        self.assertGreater(len(resp.json), 0, '%s is empty.' % url)
+        selected = resp.json[0]
+
+        url = '/v1/policies?pack=%s&name=%s' % (selected['pack'], selected['name'])
+        resp = self.app.get(url)
+        self.assertEqual(resp.status_int, 200)
+        self.assertEqual(len(resp.json), 1, '%s did not return exactly one instance.' % url)
+        retrieved = resp.json[0]
+        self.assertEqual(retrieved['id'], selected['id'],
+                         '%s returned incorrect instance.' % url)
+
+        url = '/v1/policies?name=%s' % selected['name']
+        resp = self.app.get(url)
+        self.assertEqual(resp.status_int, 200)
+        self.assertEqual(len(resp.json), 1, '%s did not return exactly one instance.' % url)
+        retrieved = resp.json[0]
+        self.assertEqual(retrieved['id'], selected['id'],
+                         '%s returned incorrect instance.' % url)
+
+        url = '/v1/policies?pack=%s' % selected['pack']
+        resp = self.app.get(url)
+        self.assertEqual(resp.status_int, 200)
+        self.assertGreater(len(resp.json), 1, '%s did not return multiple instances.' % url)
+
+    def test_filter_empty(self):
+        url = '/v1/policies?pack=yo&name=whatever'
+        resp = self.app.get(url)
+        self.assertEqual(resp.status_int, 200)
+        self.assertEqual(len(resp.json), 0, '%s is not empty.' % url)
+
+    def test_get_one(self):
+        url = '/v1/policies'
+        resp = self.app.get(url)
+        self.assertEqual(resp.status_int, 200)
+        self.assertGreater(len(resp.json), 0, '%s is empty.' % url)
+        selected = resp.json[0]
+
+        url = '/v1/policies/%s' % selected['id']
+        resp = self.app.get(url)
+        self.assertEqual(resp.status_int, 200)
+        retrieved = resp.json
+        self.assertEqual(retrieved['id'], selected['id'],
+                         '%s returned incorrect instancee.' % url)
+
+    def test_get_one_fail(self):
+        url = '/v1/policies/1'
         resp = self.app.get(url, expect_errors=True)
         self.assertEqual(resp.status_int, 404)

@@ -37,8 +37,8 @@ from st2common.persistence.execution import (ActionExecution)
 from st2common.persistence.reactor import (Rule, Trigger, TriggerType, TriggerInstance)
 
 ALLOWED_DB_FIXTURES = ['actions', 'actionstates', 'aliases', 'executions', 'liveactions',
-                       'policytypes', 'rules', 'runners', 'triggertypes', 'triggers',
-                       'triggerinstances']
+                       'policies', 'policytypes', 'rules', 'runners',
+                       'triggertypes', 'triggers', 'triggerinstances']
 ALLOWED_FIXTURES = copy.copy(ALLOWED_DB_FIXTURES)
 ALLOWED_FIXTURES.extend(['actionchains', 'workflows'])
 

@@ -14,7 +14,8 @@
 # limitations under the License.
 
 from st2common.models.api.base import BaseAPI
-from st2common.models.db.policy import PolicyTypeDB
+from st2common.models.db.policy import PolicyTypeDB, PolicyDB
+from st2common.models.system.common import ResourceReference
 from st2common import log as logging
 from st2common.util import schema as util_schema
 
@@ -69,5 +70,71 @@ class PolicyTypeAPI(BaseAPI):
         model.enabled = bool(instance.enabled)
         model.resource_type = str(instance.resource_type)
         model.module = str(instance.module)
+        model.parameters = getattr(instance, 'parameters', dict())
+        return model
+
+
+class PolicyAPI(BaseAPI):
+    model = PolicyDB
+    schema = {
+        "title": "Policy",
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "default": None
+            },
+            "name": {
+                "type": "string",
+                "required": True
+            },
+            "pack": {
+                "type": "string"
+            },
+            "ref": {
+                "type": "string"
+            },
+            "description": {
+                "type": "string"
+            },
+            "enabled": {
+                "type": "boolean",
+                "default": True
+            },
+            "resource_ref": {
+                "type": "string",
+                "required": True
+            },
+            "policy_type": {
+                "type": "string",
+                "required": True
+            },
+            "parameters": {
+                "type": "object",
+                "patternProperties": {
+                    "^\w+$": {
+                        "anyOf": [
+                            {"type": "array"},
+                            {"type": "boolean"},
+                            {"type": "integer"},
+                            {"type": "number"},
+                            {"type": "object"},
+                            {"type": "string"}
+                        ]
+                    }
+                }
+            }
+        },
+        "additionalProperties": False
+    }
+
+    @classmethod
+    def to_model(cls, instance):
+        model = super(cls, cls).to_model(instance)
+        model.pack = str(instance.pack)
+        model.ref = ResourceReference.to_string_reference(pack=model.pack, name=model.name)
+        model.enabled = bool(instance.enabled)
+        model.resource_ref = str(instance.resource_ref)
+        model.policy_type = str(instance.policy_type)
         model.parameters = getattr(instance, 'parameters', dict())
         return model
