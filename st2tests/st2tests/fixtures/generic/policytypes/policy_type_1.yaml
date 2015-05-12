@@ -1,0 +1,10 @@
+---
+name: action.concurrency
+description: Limits the concurrent executions for the action.
+enabled: true
+resource_type: Action
+module: st2action.policies.concurrency
+parameters:
+    threshold:
+        type: integer
+        required: true

@@ -37,7 +37,9 @@ class PolicyTypeDB(stormbase.StormBaseDB):
         module: The python module that implements the policy for this type.
         parameters: The specification for parameters for the policy type.
     """
-    resource_type = me.StringField(required=True)
+    resource_type = me.StringField(
+        required=True,
+        help_text='The type of resource that this policy type can be applied to.')
     enabled = me.BooleanField(
         required=True,
         default=True,
